@@ -1,17 +1,23 @@
 package br.com.waltersoftware.coupon.repository.interfaces;
 
+import br.com.waltersoftware.coupon.models.CouponEntity;
+import br.com.waltersoftware.coupon.repository.dto.DatabaseDtoBase;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CouponRepository extends JpaRepository<CouponEntity, Long> {
-    Optional<CouponEntity> findByCode(String code);
+    DatabaseDtoBase<Optional<CouponEntity>> findByCode(String code);
 
-    List<CouponEntity> findByActiveTrue();
+    DatabaseDtoBase<List<CouponEntity>> findByActiveTrue();
 
-    List<CouponEntity> findByActiveFalse();
+    DatabaseDtoBase<List<CouponEntity>> findByActiveFalse();
 
-    boolean existsByCode(String code);
+    DatabaseDtoBase<Boolean> existsByCode(String code);
 
-    void deleteByCode(String code);
+    DatabaseDtoBase<Optional<CouponEntity>> deleteByCode(String code);
 
 }

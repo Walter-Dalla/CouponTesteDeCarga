@@ -1,9 +1,10 @@
 package br.com.waltersoftware.coupon.service.dto;
 
+import br.com.waltersoftware.coupon.controller.requestDTO.DeleteCouponRequest;
 import br.com.waltersoftware.coupon.controller.requestDTO.FindCouponFilterRequest;
 
-public record DeleteCouponDto() {
-    public static FindCouponFilterDto from(FindCouponFilterRequest findCouponFilterRequest) {
-        return new FindCouponFilterDto(findCouponFilterRequest.code());
+public record DeleteCouponDto(String code) {
+    public static FindCouponFilterDto from(DeleteCouponRequest deleteCouponRequest) {
+        return new FindCouponFilterDto(deleteCouponRequest.code());
     }
 }
