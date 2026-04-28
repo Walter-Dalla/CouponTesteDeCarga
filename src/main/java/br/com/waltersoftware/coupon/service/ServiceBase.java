@@ -1,17 +1,20 @@
 package br.com.waltersoftware.coupon.service;
 
-import br.com.waltersoftware.coupon.repository.dto.DatabaseDtoBase;
+import br.com.waltersoftware.coupon.domain.CouponEntity;
+import br.com.waltersoftware.coupon.exception.BusinessNotFoundException;
+import br.com.waltersoftware.coupon.service.dto.ServiceReturnBase;
 
-public class ServiceBase {
-    public boolean validateDatabaseResultAndRollbackIfNeeded(DatabaseDtoBase databaseResult){
-        if(!databaseResult.success()){
-            if(databaseResult.shouldRollback()){
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            }
+import java.util.Optional;
+import java.util.UUID;
 
-            return false;
+public abstract class ServiceBase {
+
+    // Normalmente utilizo um validador generico de erros... Esse codigo é muito simples para ter um validador desse tipo
+    // porém aqui estou simulando caso houvesse uma regra mais robusta
+    public boolean validateDatabaseResult(Optional<CouponEntity> databaseResult) throws BusinessNotFoundException {
+        if(databaseResult.isEmpty()){
+            throw new BusinessNotFoundException("Cupom não encontrato");
         }
-
-        return true;
+        return databaseResult.isPresent();
     }
 }

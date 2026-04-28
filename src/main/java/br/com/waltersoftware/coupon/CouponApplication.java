@@ -1,4 +1,4 @@
-package br.com.waltersoftware.coupon.coupon;
+package br.com.waltersoftware.coupon;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

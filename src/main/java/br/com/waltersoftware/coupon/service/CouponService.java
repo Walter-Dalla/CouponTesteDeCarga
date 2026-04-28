@@ -1,17 +1,18 @@
 package br.com.waltersoftware.coupon.service;
 
-import br.com.waltersoftware.coupon.models.CouponEntity;
-import br.com.waltersoftware.coupon.repository.dto.DatabaseDtoBase;
+import br.com.waltersoftware.coupon.domain.CouponEntity;
+import br.com.waltersoftware.coupon.exception.BusinessDuplicateCouponException;
+import br.com.waltersoftware.coupon.exception.BusinessException;
+import br.com.waltersoftware.coupon.exception.BusinessNotFoundException;
 import br.com.waltersoftware.coupon.repository.interfaces.CouponRepository;
 import br.com.waltersoftware.coupon.service.dto.CreateNewCouponDto;
-import br.com.waltersoftware.coupon.service.dto.FindCouponFilterDto;
-import br.com.waltersoftware.coupon.service.dto.DeleteCouponDto;
-import br.com.waltersoftware.coupon.service.dto.SeriviceReturnBase;
+import br.com.waltersoftware.coupon.service.dto.ServiceReturnBase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -20,52 +21,40 @@ public class CouponService extends ServiceBase {
     private final CouponRepository couponRepository;
 
     @Transactional
-    public SeriviceReturnBase<CouponEntity> findCoupon(FindCouponFilterDto findCouponFilterDto){
+    public ServiceReturnBase<CouponEntity> findCoupon(UUID code) throws BusinessNotFoundException {
 
-        DatabaseDtoBase<Optional<CouponEntity>> couponDatabaseResult = couponRepository.findByCode(findCouponFilterDto.code());
+        Optional<CouponEntity> couponDatabaseResult = couponRepository.findById(code);
 
-        boolean success = validateDatabaseResultAndRollbackIfNeeded(couponDatabaseResult);
-        if(!success){
-            return SeriviceReturnBase.error();
-        }
+        validateDatabaseResult(couponDatabaseResult);
 
-        return SeriviceReturnBase.ok(couponDatabaseResult.data().get());
+        return ServiceReturnBase.ok(couponDatabaseResult.get());
     }
 
     @Transactional
-    public SeriviceReturnBase<CouponEntity> createCoupon(CreateNewCouponDto createNewCouponDto){
+    public ServiceReturnBase<CouponEntity> createCoupon(CreateNewCouponDto createNewCouponDto) throws BusinessDuplicateCouponException {
 
-        DatabaseDtoBase<Boolean> existsDatabaseResult = couponRepository.existsByCode(createNewCouponDto.code());
+        boolean existsDatabaseResult = couponRepository.existsById(createNewCouponDto.code());
 
-        if(!existsDatabaseResult.success()){
-            return SeriviceReturnBase.error();
-        }
-
-        if (existsResult.data().isPresent()) {
-            throw new RuntimeException("Cupom já existe com esse código");
+        if (existsDatabaseResult) {
+            throw new BusinessDuplicateCouponException("Cupom já existe com esse código");
         }
 
         CouponEntity entity = new CouponEntity(createNewCouponDto);
 
-        DatabaseDtoBase<Optional<CouponEntity>> couponDatabaseResult = couponRepository.save(entity);
+        CouponEntity couponDatabaseResult = couponRepository.save(entity);
 
-        boolean success = validateDatabaseResultAndRollbackIfNeeded(couponDatabaseResult);
-        if(!success){
-            return SeriviceReturnBase.error();
-        }
-
-        return SeriviceReturnBase.ok(couponDatabaseResult.data().get());
+        return ServiceReturnBase.ok(couponDatabaseResult);
     }
 
     @Transactional
-    public SeriviceReturnBase<CouponEntity> deleteCoupon(DeleteCouponDto deleteCouponDto){
-        DatabaseDtoBase<Optional<CouponEntity>> couponDatabaseResult = couponRepository.deleteByCode(deleteCouponDto.code());
+    public ServiceReturnBase deleteCoupon(UUID code) throws BusinessException {
+        Optional<CouponEntity> result = couponRepository.findById(code);
+        validateDatabaseResult(result);
 
-        boolean success = validateDatabaseResultAndRollbackIfNeeded(couponDatabaseResult);
-        if(!success){
-            return SeriviceReturnBase.error();
-        }
+        CouponEntity entity = result.get();
+        entity.delete();
+        couponRepository.save(entity);
 
-        return SeriviceReturnBase.ok(couponDatabaseResult.data().get());
+        return ServiceReturnBase.ok();
     }
 }
